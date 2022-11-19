@@ -1,5 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+/*****************
+* Plugin variables
+******************/
+body {
+  --react-datepicker-navigation-height: 24px;
+  --react-datepicker-navigation-width: 24px;
+}
+
+/*****************
+*      Base
+******************/
 .database-plugin__html {
   box-sizing: border-box;
 }
@@ -194,10 +205,6 @@ span.database-plugin__calendar {
   background-color: var(--form-background);
 }
 
-.database-plugin__checkbox input[type="checkbox"]:checked:after {
-  background-color: var(--form-background);
-}
-
 /*next*/
 
 .database-plugin__md_cell {
@@ -218,8 +225,7 @@ span.database-plugin__calendar {
 .database-plugin__markdown-preview-view {
   padding: 0;
   height: fit-content;
-  display: flex;
-  align-items: center;
+  align-items: left;
   font-weight: 400;
   font-size: larger;
 }
@@ -368,6 +374,7 @@ internal link .svg-icon-sm svg {
   align-items: center;
   font-weight: 1000;
   justify-content: center;
+  /*icon to be left aligned*/
 }
 
 .database-plugin__td {
