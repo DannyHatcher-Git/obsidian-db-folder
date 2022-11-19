@@ -1,16 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-/*****************
-* Plugin variables
-******************/
-body {
-  --react-datepicker-navigation-height: 24px;
-  --react-datepicker-navigation-width: 24px;
-}
-
-/*****************
-*      Base
-******************/
 .database-plugin__html {
   box-sizing: border-box;
 }
@@ -199,6 +188,10 @@ span.database-plugin__calendar {
 .database-plugin__checkbox input[type="checkbox"]:focus {
   outline: max(2px, 0.15em) solid currentColor;
   outline-offset: max(2px, 0.15em);
+}
+
+.database-plugin__checkbox input[type="checkbox"]:checked:after {
+  background-color: var(--form-background);
 }
 
 .database-plugin__checkbox input[type="checkbox"]:checked:after {

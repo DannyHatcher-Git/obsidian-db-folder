@@ -1,11 +1,12 @@
-import { InputType, MarkdownBreakerRules } from "helpers/Constants";
-import { DataObject, Literal, WrappedLiteral } from "obsidian-dataview/lib/data-model/value";
+import { DEFAULT_SETTINGS, InputType, MarkdownBreakerRules } from "helpers/Constants";
+import { DataObject, Link, Literal, WrappedLiteral } from "obsidian-dataview/lib/data-model/value";
 import { DateTime } from "luxon";
 import { LOGGER } from "services/Logger";
 import { DataviewService } from "services/DataviewService";
 import { LocalSettings } from "cdm/SettingsModel";
 import { RowDataType, TableColumn } from "cdm/FolderModel";
 import { deepMerge, generateLiteral, obtainAnidatedLiteral } from "helpers/DataObjectHelper";
+import { parseLuxonDatetimeToString, parseLuxonDateToString, parseStringToLuxonDate, parseStringToLuxonDatetime } from "helpers/LuxonHelper";
 
 class Parse {
 
@@ -43,10 +44,10 @@ class Parse {
                 parsedLiteral = this.parseToCalendar(wrapped, localSettings.date_format);
                 break;
             case InputType.CALENDAR_TIME:
-                parsedLiteral = this.parseToCalendar(wrapped, localSettings.datetime_format);
+                parsedLiteral = this.parseToCalendarTime(wrapped, localSettings.datetime_format);
                 break;
             case InputType.METATADA_TIME:
-                parsedLiteral = this.parseToCalendar(wrapped);
+                parsedLiteral = this.parseToISO(wrapped);
                 break;
             case InputType.NUMBER:
                 parsedLiteral = this.parseToNumber(wrapped);
@@ -54,8 +55,12 @@ class Parse {
             case InputType.CHECKBOX:
                 parsedLiteral = this.parseToBoolean(wrapped);
                 break;
+            case InputType.RELATION:
+                parsedLiteral = this.parseToLink(wrapped);
+                break;
             case InputType.TASK:
             case InputType.FORMULA:
+            case InputType.ROLLUP:
             case InputType.INLINKS:
             case InputType.OUTLINKS:
                 // Do nothing
@@ -74,9 +79,15 @@ class Parse {
      * @returns 
      */
     public parseDataArray(literal: Literal): Literal {
-        if ((literal as any).values !== undefined && (literal as any).settings !== undefined) {
+        if (literal === null || literal === undefined) {
+            return literal;
+        }
+
+        if (typeof literal === 'object' &&
+            (literal as any).values !== undefined && (literal as any).settings !== undefined) {
             literal = (literal as any).values
         }
+
         return literal;
     }
 
@@ -94,7 +105,10 @@ class Parse {
     ): Literal {
         if (typeof newValue === "string") {
             try {
-                newValue = JSON.parse(newValue);
+                // Check if is a valid JSON
+                if (newValue.startsWith("{") && newValue.endsWith("}")) {
+                    newValue = JSON.parse(newValue);
+                }
             } catch (e) {
                 // Do nothing
             }
@@ -107,7 +121,8 @@ class Parse {
                 const source = generateLiteral(column.nestedKey, newValue);
                 return deepMerge(source, target);
             } catch (e) {
-                // Just return the original value
+                LOGGER.error(`Error parsing row to literal: ${e}`);
+                newValue = "";
             }
         }
         return newValue;
@@ -128,14 +143,38 @@ class Parse {
         return this.parseLiteral(literal, type, config);
     }
 
-    private parseToCalendar(wrapped: WrappedLiteral, format?: string): DateTime {
+    private parseToLink(wrapped: WrappedLiteral): Link[] {
+        // If is a link, return it into an array
+        if (wrapped.type === 'link') {
+            return [wrapped.value];
+        }
+        // If is an array of links, return it
+        if (wrapped.type === 'array') {
+            const filteredLinks = wrapped.value.filter((value) => {
+                const wrappedValue = DataviewService.wrapLiteral(value);
+                return wrappedValue.type === 'link';
+            });
+            return filteredLinks as Link[];
+        }
+        // If is something else, return empty array
+        return [];
+    }
+
+    private parseToCalendar(wrapped: WrappedLiteral, format = DEFAULT_SETTINGS.local_settings.date_format): DateTime {
         if (wrapped.type === 'string') {
-            let calendarCandidate;
-            if (format) {
-                calendarCandidate = DateTime.fromFormat(wrapped.value, format);
-            } else {
-                calendarCandidate = DateTime.fromISO(wrapped.value);
-            }
+            return parseStringToLuxonDate(wrapped.value, format);
+        }
+
+        if (DateTime.isDateTime(wrapped.value)) {
+            return wrapped.value;
+        } else {
+            return null;
+        }
+    }
+
+    private parseToISO(wrapped: WrappedLiteral): DateTime {
+        if (wrapped.type === 'string') {
+            const calendarCandidate = DateTime.fromISO(wrapped.value);
 
             if (calendarCandidate.isValid) {
                 return calendarCandidate;
@@ -150,11 +189,23 @@ class Parse {
         }
     }
 
+    private parseToCalendarTime(wrapped: WrappedLiteral, format = DEFAULT_SETTINGS.local_settings.datetime_format): DateTime {
+        if (wrapped.type === 'string') {
+            return parseStringToLuxonDatetime(wrapped.value, format);
+        }
+
+        if (DateTime.isDateTime(wrapped.value)) {
+            return wrapped.value;
+        } else {
+            return null;
+        }
+    }
+
     private parseToText(wrapped: WrappedLiteral, localSettings: LocalSettings): string | DataObject {
         switch (wrapped.type) {
             case 'object':
                 if (DateTime.isDateTime(wrapped.value)) {
-                    return wrapped.value.toFormat(localSettings.datetime_format);
+                    return parseLuxonDatetimeToString(wrapped.value, localSettings.datetime_format);
                 } else {
                     try {
                         // Try to parse to JSON
@@ -165,6 +216,8 @@ class Parse {
                     // nested metadata exposed as DataObject
                     return wrapped.value;
                 }
+            case 'link':
+                return wrapped.value.markdown()
             // Else go to default
             default:
                 return DataviewService.getDataviewAPI().value.toString(wrapped.value);
@@ -199,8 +252,10 @@ class Parse {
             case 'date':
                 if (DateTime.isDateTime(wrapped.value)) {
                     auxMarkdown = wrapped.value.toMillis().toString();
-                    break;
+                } else {
+                    auxMarkdown = JSON.stringify(wrapped.value);
                 }
+                break;
             // By default. Use markdown parser
             default:
                 auxMarkdown = this.parseToMarkdown(wrapped, localSettings, isInline);
@@ -217,17 +272,26 @@ class Parse {
                 break;
             case 'array':
                 auxMarkdown = wrapped.value
-                    .map(v => this.parseToMarkdown(DataviewService.getDataviewAPI().value.wrapValue(v), localSettings, isInline))
+                    .map(
+                        v => this.parseToMarkdown(
+                            DataviewService.wrapLiteral(v),
+                            localSettings,
+                            isInline
+                        )
+                    )
                     .join(', ');
                 break;
-
+            case 'link':
+                auxMarkdown = wrapped.value.markdown();
+                break;
             case 'date':
                 if (wrapped.value.hour === 0 && wrapped.value.minute === 0 && wrapped.value.second === 0) {
                     // Parse date
-                    auxMarkdown = wrapped.value.toFormat(localSettings.date_format);
+
+                    auxMarkdown = parseLuxonDatetimeToString(wrapped.value, localSettings.date_format);
                 } else {
                     // Parse datetime
-                    auxMarkdown = wrapped.value.toFormat(localSettings.datetime_format);
+                    auxMarkdown = parseLuxonDateToString(wrapped.value, localSettings.datetime_format);
                 }
                 break;
             case 'object':
@@ -252,27 +316,34 @@ class Parse {
     }
 
     private handleYamlBreaker(value: string, localSettings: LocalSettings, isInline?: boolean): string {
-        // Do nothing if is inline
-        if (isInline) {
-            return value;
-        }
-
         // Remove a possible already existing quote wrapper
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1);
         }
 
+        // Wrap in quotes if is configured to do so
+        if (localSettings.frontmatter_quote_wrap) {
+            return this.wrapWithQuotes(value);
+        }
+
+        // Do nothing if is inline
+        if (isInline) {
+            return value;
+        }
+
         // Check possible markdown breakers of the yaml
         if (MarkdownBreakerRules.INIT_CHARS.some(c => value.startsWith(c)) ||
             MarkdownBreakerRules.BETWEEN_CHARS.some(rule => value.includes(rule)) ||
-            MarkdownBreakerRules.UNIQUE_CHARS.some(c => value === c) ||
-            localSettings.frontmatter_quote_wrap) {
-            value = value.replaceAll(`\\`, ``);
-            value = value.replaceAll(`"`, `\\"`);
-            return `"${value}"`;
+            MarkdownBreakerRules.UNIQUE_CHARS.some(c => value === c)) {
+            return this.wrapWithQuotes(value);
         }
-
         return value;
+    }
+
+    private wrapWithQuotes(value: string): string {
+        value = value.replaceAll(`\\`, ``);
+        value = value.replaceAll(`"`, `\\"`);
+        return `"${value}"`;
     }
 
     /**

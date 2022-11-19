@@ -32,19 +32,21 @@ function numberTypeComponent(headerActionResponse: HeaderActionResponse) {
     (state) => state.ddbbConfig
   );
 
-  const numberOnClick = () => {
-    hooks.setShowType(false);
-    hooks.setExpanded(false);
+  const numberOnClick = async () => {
+    hooks.setTypesEl(null);
+    hooks.setMenuEl(null);
     dataActions.parseDataOfColumn(
       column.columnDef as TableColumn,
       InputType.NUMBER,
       ddbbConfig
     );
-    columnActions.alterColumnType(
+
+    await columnActions.alterColumnType(
       column.columnDef as TableColumn,
       InputType.NUMBER
     );
   };
+
   return headerTypeComponent({
     onClick: numberOnClick,
     icon: <HashIcon />,

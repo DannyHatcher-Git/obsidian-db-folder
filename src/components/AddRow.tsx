@@ -48,6 +48,7 @@ export function AddRow(props: AddRowProps) {
       )
       .then(() => {
         setInputNewRow("");
+        table.setPageIndex(table.getPageCount() - 1);
       });
   }
 
@@ -66,9 +67,8 @@ export function AddRow(props: AddRowProps) {
       className={`${c("add-row")}`}
       size="small"
       sx={{
-        padding: 0.5,
         bordercolor: StyleVariables.TEXT_NORMAL,
-        border: 0.5,
+        border: 0,
       }}
     >
       <Button
@@ -77,7 +77,6 @@ export function AddRow(props: AddRowProps) {
           setInputNewRow("");
           setShowNewRow(!showNewRow);
         }}
-        size="small"
         sx={{
           bgcolor: StyleVariables.BACKGROUND_PRIMARY,
           color: StyleVariables.TEXT_NORMAL,
@@ -86,10 +85,9 @@ export function AddRow(props: AddRowProps) {
             color: StyleVariables.TEXT_NORMAL,
             border: 0,
           },
-          height: "30px",
-          maxHeight: "30px",
           border: 0,
         }}
+        style={{ minWidth: "30px" }}
       >
         {showNewRow ? (
           <CloseIcon />
@@ -97,6 +95,7 @@ export function AddRow(props: AddRowProps) {
           <AddIcon
             style={{
               border: 0,
+              fontSize: "1.35rem",
             }}
           />
         )}

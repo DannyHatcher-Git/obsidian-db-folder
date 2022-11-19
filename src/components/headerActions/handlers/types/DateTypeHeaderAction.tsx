@@ -33,16 +33,16 @@ function dateTypeComponent(headerActionResponse: HeaderActionResponse) {
     (state) => state.ddbbConfig
   );
 
-  const dateOnClick = () => {
-    hooks.setShowType(false);
-    hooks.setExpanded(false);
+  const dateOnClick = async () => {
+    hooks.setTypesEl(null);
+    hooks.setMenuEl(null);
     dataActions.parseDataOfColumn(
       column.columnDef as TableColumn,
       InputType.CALENDAR,
       ddbbConfig
     );
 
-    columnActions.alterColumnType(
+    await columnActions.alterColumnType(
       column.columnDef as TableColumn,
       InputType.CALENDAR
     );

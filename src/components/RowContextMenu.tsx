@@ -28,7 +28,19 @@ const rowContextMenuColumn: TableColumn = {
       rowActions.renameFile(row.index);
     };
 
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    /**
+     * Handle left click
+     * @param event
+     */
+    const handleClick = async () => {
+      await app.workspace.getLeaf().openFile(row.original.__note__.getFile());
+    };
+
+    /**
+     * Handle right click
+     * @param event
+     */
+    const handlerContextMenu = async (event: React.MouseEvent<HTMLElement>) => {
       showFileMenu(
         row.original.__note__.getFile(),
         event.nativeEvent,
@@ -36,22 +48,30 @@ const rowContextMenuColumn: TableColumn = {
         handleRenameRow
       );
     };
+
     const index = Number(row.index) + 1;
+
     return (
       <>
         <div
           onClick={handleClick}
+          onContextMenu={handlerContextMenu}
           key={`row-context-button-${index}`}
           style={{
             alignItems: "center",
             display: "flex",
             justifyContent: "center",
+            height: "100%",
+            width: "100%",
+            margin: "0",
           }}
         >
-          <Relationship
-            value={index}
-            backgroundColor={StyleVariables.BACKGROUND_PRIMARY}
-          />
+          {
+            <Relationship
+              value={index}
+              backgroundColor={StyleVariables.BACKGROUND_PRIMARY}
+            />
+          }
         </div>
       </>
     );

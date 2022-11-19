@@ -44,11 +44,19 @@ export interface ConfigColumn {
     wrap_content?: boolean;
     // Text
     link_alias_enabled?: boolean;
+    custom_link_alias?: string;
     // Tasks
     task_hide_completed?: boolean;
     // Formulas
     formula_query?: string;
     persist_formula?: boolean;
+    // Relations
+    related_note_path?: string;
+    // Rollups
+    asociated_relation_id?: string;
+    rollup_action?: string;
+    rollup_key?: string;
+    persist_rollup?: boolean;
     /** Extras from yaml */
     [key: string]: Literal;
 }
@@ -62,7 +70,6 @@ export type BaseColumn = {
     config: ConfigColumn;
     /** Circunstancial */
     nestedKey?: string;
-    options?: RowSelectOption[];
     csvCandidate?: boolean;
     width?: number;
     position?: number;
@@ -73,7 +80,10 @@ export type BaseColumn = {
     isHidden?: boolean;
     skipPersist?: boolean;
     isDragDisabled?: boolean;
+    // Selects & Tags
+    options?: RowSelectOption[];
 }
+
 export type TableColumn = ColumnDef<RowDataType, Literal> & BaseColumn;
 
 export type RowDataType = {
@@ -91,7 +101,6 @@ export type TableDataType = {
     stateManager: StateManager,
     tableStore?: TableStateInterface
 }
-
 export interface DatabaseHeaderProps {
     column: Column<RowDataType, Literal>,
     header: Header<RowDataType, Literal>,

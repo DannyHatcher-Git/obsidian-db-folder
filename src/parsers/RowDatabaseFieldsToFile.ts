@@ -33,11 +33,11 @@ export function parseValuetoSanitizeYamlValue(value: string, localSettings: Loca
 
 function stringifyDbYaml(literal: Literal, level: number, localSettings: LocalSettings, key?: string): string[] {
     const literalBlock: string[] = [];
-    literal = DataviewService.parseDataArray(literal);
+    literal = ParseService.parseDataArray(literal);
     // Manage Arrays
     if (DataviewService.getDataviewAPI().value.isArray(literal)) {
         literalBlock.push(`${" ".repeat(level)}${key}:`);
-        literal.forEach((literal, index) => {
+        literal.forEach((literal) => {
             literalBlock.push(...stringifyDbYaml(literal, level + 1, localSettings));
         });
     }
@@ -58,7 +58,7 @@ function stringifyDbYaml(literal: Literal, level: number, localSettings: LocalSe
     else if (key) {
         literalBlock.push(`${" ".repeat(level)}${key}: ${ParseService.parseLiteral(literal, InputType.MARKDOWN, localSettings)}`);
     } else {
-        literalBlock.push(`${" ".repeat(level)}- ${ParseService.parseLiteral(literal, InputType.MARKDOWN, localSettings)}`);
+        literalBlock.push(`${" ".repeat(level)}- ${ParseService.parseLiteral(literal, InputType.MARKDOWN, { ...localSettings, frontmatter_quote_wrap: true })}`);
     }
     return literalBlock;
 }

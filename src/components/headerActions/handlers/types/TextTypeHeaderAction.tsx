@@ -32,15 +32,16 @@ function textTypeComponent(headerActionResponse: HeaderActionResponse) {
   const ddbbConfig = table.options.meta.tableState.configState(
     (state) => state.ddbbConfig
   );
-  const tagsOnClick = () => {
-    hooks.setShowType(false);
-    hooks.setExpanded(false);
+  const tagsOnClick = async () => {
+    hooks.setTypesEl(null);
+    hooks.setMenuEl(null);
     dataActions.parseDataOfColumn(
       column.columnDef as TableColumn,
       InputType.TEXT,
       ddbbConfig
     );
-    columnActions.alterColumnType(
+
+    await columnActions.alterColumnType(
       column.columnDef as TableColumn,
       InputType.TEXT
     );

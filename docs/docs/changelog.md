@@ -1,3 +1,67 @@
+## 2.8.4
+### Shiny new things
+- New rollup. All task count [ISSUE#602](https://github.com/RafaelGB/obsidian-db-folder/issues/602)
+- New db source, current folder without subfolders [ISSUE#281](https://github.com/RafaelGB/obsidian-db-folder/issues/281)
+- Now row context menu will display with right click (long press on mobile). Left click will open the note.
+### Improved
+- Default values avaliable for cell size and sticky of first colum on global settings [ISSUE#358](https://github.com/RafaelGB/obsidian-db-folder/issues/358)
+- New toggle global configuration to show/hide the row shadow [ISSUE#421](https://github.com/RafaelGB/obsidian-db-folder/issues/421)
+- New column text configuration to customize the name of URL alias [ISSUE#356](https://github.com/RafaelGB/obsidian-db-folder/issues/356)
+- Go to page of entry creation [ISSUE#332](https://github.com/RafaelGB/obsidian-db-folder/issues/332)
+- Support for external links [ISSUE#232](https://github.com/RafaelGB/obsidian-db-folder/issues/232)
+### No longer broken
+- Error handler with not correct calendar formats. Use a default one [ISSUE#595](https://github.com/RafaelGB/obsidian-db-folder/issues/595)
+- Relations of dataview sources are now filtered correctly
+## 2.8.3
+### Shiny new things
+- Obsidian-projects support (experimental) [ISSUE#574](https://github.com/RafaelGB/obsidian-db-folder/issues/574)
+### Improved
+- `Select file as Column template` option improved. Now the columns does not replace the current ones, but add the new ones to the right of the current ones. [ISSUE#230](https://github.com/RafaelGB/obsidian-db-folder/issues/230)
+### No longer broken
+- Wrong atributtes order on CSV import fixed. [ISSUE#551](https://github.com/RafaelGB/obsidian-db-folder/issues/551)
+- Value of filters now support special characters. [ISSUE#579](https://github.com/RafaelGB/obsidian-db-folder/issues/579)
+- Relations are now correctly configured for dataview/tags sources [ISSUE#572](https://github.com/RafaelGB/obsidian-db-folder/issues/572) [ISSUE#573](https://github.com/RafaelGB/obsidian-db-folder/issues/573)
+- Rename file function fixed for Obsidian 1.0.x
+## 2.8.2
+### Visual
+- UX improvements for date picker and time picker
+- Checkbox design improvements [randomsnowflake](https://github.com/randomsnowflake)
+### No longer broken
+- Tags are now properly saved when it's a number with decimals with zero at the end (e.g. 1.0, 1.00, 1.000, etc.)
+- Datepicker clear button now works properly [ISSUE#564](https://github.com/RafaelGB/obsidian-db-folder/issues/564)
+- Vertical scroll on mobile improved [ISSUE#488](https://github.com/RafaelGB/obsidian-db-folder/issues/488)
+## 2.8.1
+### Shiny new things
+- New rollup functions: Count unique values,Truthy count, Falsy count, Percent empty, Percent filled, Task TODO, Task completed
+- Rollup API improvements for use inside the formulas
+### No longer broken
+- Rollups now works with just 1 row inside the relation
+- Edit engine works correctly with empty yaml when we remove the last field or change the last field to inline [ISSUE#553](https://github.com/RafaelGB/obsidian-db-folder/issues/553)
+- Relations now works too with dataview sources [ISSUE#568](https://github.com/RafaelGB/obsidian-db-folder/issues/568)
+- useEffect loop when we persisted a  formula in some cases fixed [ISSUE#569](https://github.com/RafaelGB/obsidian-db-folder/issues/569)
+## 2.8.0
+### Shiny new things
+- Added video examples to the docs for each section [imeed166](https://github.com/imeed166)
+- Relation/Rollups arrives! Now you can create a relation between two models and use it to create a rollup. Both with its own column properties. [ISSUE#53](https://github.com/RafaelGB/obsidian-db-folder/issues/53)
+- `db.dataview` and `db.rollup` functions were included to use in your formulas. dataview returns the API of the dv plugin and rollup returns the predefined functions of dbfolder rollups (check [documentation](https://rafaelgb.github.io/obsidian-db-folder/features/Formulas/#exposed-variables))
+### Visual
+- formula textarea size calculated in funcion of length [ISSUE#518](https://github.com/RafaelGB/obsidian-db-folder/issues/518)
+### No longer broken
+- enter key listener bug for search input removed [ISSUE#546](https://github.com/RafaelGB/obsidian-db-folder/issues/546)
+- add multiple tags at the same time do not cause a concurrency problem [ISSUE#555](https://github.com/RafaelGB/obsidian-db-folder/issues/555)
+## 2.7.4
+### Shiny new things
+- names of tags are now editable (updating all the related rows) [ISSUE#443](https://github.com/RafaelGB/obsidian-db-folder/issues/443)
+### Improved
+- ddbb yaml now supports linter plugins [ISSUE#509](https://github.com/RafaelGB/obsidian-db-folder/issues/509)
+- Enter event added to add tags on column settings [ISSUE#520](https://github.com/RafaelGB/obsidian-db-folder/issues/520)
+- Improved nested matadata behaviour [ISSUE#500](https://github.com/RafaelGB/obsidian-db-folder/issues/500)
+### Visual
+- UX of navbar and addRow forms improved with some redesigns [ISSUE#534](https://github.com/RafaelGB/obsidian-db-folder/issues/534) [cesarpereira904](https://github.com/cesarpereira904)
+### No longer broken
+- problem with dataview query without any column informed fixed [ISSUE#531](https://github.com/RafaelGB/obsidian-db-folder/issues/531)
+- Sorting dates and numbers is now more precise [ISSUE#507](https://github.com/RafaelGB/obsidian-db-folder/issues/507) [ISSUE#516](https://github.com/RafaelGB/obsidian-db-folder/issues/516) [ISSUE#533](https://github.com/RafaelGB/obsidian-db-folder/issues/533)
+- CSV export button fixed. the bug was introduced in 2.7.3 [ISSUE#535](https://github.com/RafaelGB/obsidian-db-folder/issues/535)
 ## 2.7.3
 ### Improved
 - Use of Obsidian 1.0 color picker [ISSUE#497](https://github.com/RafaelGB/obsidian-db-folder/issues/497)

@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, {
+  DetailedHTMLProps,
+  forwardRef,
+  InputHTMLAttributes,
+  useState,
+} from "react";
 import { DateTime } from "luxon";
 import DatePicker from "react-datepicker";
 import { Portal } from "@mui/material";
 import { CellComponentProps } from "cdm/ComponentsModel";
 import { TableColumn } from "cdm/FolderModel";
 import { ParseService } from "services/ParseService";
-import { InputType } from "helpers/Constants";
+import { DEFAULT_SETTINGS, InputType } from "helpers/Constants";
+import { c } from "helpers/StylesHelper";
+import { Platform } from "obsidian";
+import { parseLuxonDatetimeToString } from "helpers/LuxonHelper";
 
 const CalendarTimeCell = (calendarTimeProps: CellComponentProps) => {
   const { defaultCell } = calendarTimeProps;
@@ -35,7 +43,7 @@ const CalendarTimeCell = (calendarTimeProps: CellComponentProps) => {
     setShowDatePicker(true);
   }
 
-  function handleCalendarChange(date: Date) {
+  async function handleCalendarChange(date: Date) {
     const changed = date !== null ? DateTime.fromJSDate(date) : null;
 
     const newCell = ParseService.parseRowToLiteral(
@@ -44,14 +52,13 @@ const CalendarTimeCell = (calendarTimeProps: CellComponentProps) => {
       changed
     );
 
-    dataActions.updateCell(
+    await dataActions.updateCell(
       row.index,
       tableColumn,
       newCell,
       columnsInfo.getAllColumns(),
       configInfo.getLocalSettings()
     );
-    setShowDatePicker(false);
   }
 
   const CalendarContainer = (containerProps: any) => {
@@ -60,38 +67,47 @@ const CalendarTimeCell = (calendarTimeProps: CellComponentProps) => {
     );
   };
 
+  const closeEditCalendarTimeCell = () => {
+    // We need a delay to allow the click event of clearing the date to propagate
+    setTimeout(() => {
+      setShowDatePicker(false);
+    }, 100);
+  };
+
+  const ReactDatePickerInput = forwardRef<
+    HTMLInputElement,
+    DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
+  >((props, ref) => <input ref={ref} {...props} readOnly />);
+
   return showDatePicker &&
     (tableColumn.isMetadata === undefined || !tableColumn.isMetadata) ? (
-    <div className="calendar-time">
-      <DatePicker
-        dateFormat={configInfo.getLocalSettings().datetime_format}
-        selected={
-          DateTime.isDateTime(calendarCell)
-            ? (calendarCell as unknown as DateTime).toJSDate()
-            : null
-        }
-        onChange={handleCalendarChange}
-        popperContainer={CalendarContainer}
-        onBlur={() => setShowDatePicker(false)}
-        timeFormat="HH:mm"
-        timeCaption="time"
-        showTimeSelect
-        autoFocus
-        isClearable
-        clearButtonTitle="Clear"
-        placeholderText="Pick a moment..."
-      />
-    </div>
+    <DatePicker
+      dateFormat={DEFAULT_SETTINGS.local_settings.datetime_format}
+      selected={calendarCell ? calendarCell.toJSDate() : null}
+      onChange={handleCalendarChange}
+      popperContainer={CalendarContainer}
+      onClickOutside={closeEditCalendarTimeCell}
+      onCalendarClose={closeEditCalendarTimeCell}
+      customInput={Platform.isMobile ? <ReactDatePickerInput /> : null}
+      timeFormat="HH:mm"
+      timeCaption="time"
+      showTimeSelect
+      autoFocus
+      isClearable
+      ariaLabelClose="Clear"
+      placeholderText="Pick a moment..."
+    />
   ) : (
-    <div onClick={handleSpanOnClick}>
-      <span className="calendar-time" style={{ width: column.getSize() }}>
-        {DateTime.isDateTime(calendarCell)
-          ? (calendarCell as DateTime).toFormat(
-              configInfo.getLocalSettings().datetime_format
-            )
-          : null}
-      </span>
-    </div>
+    <span
+      className={`${c("calendar")}`}
+      style={{ width: column.getSize() }}
+      onClick={handleSpanOnClick}
+    >
+      {parseLuxonDatetimeToString(
+        calendarCell,
+        configInfo.getLocalSettings().datetime_format
+      )}
+    </span>
   );
 };
 

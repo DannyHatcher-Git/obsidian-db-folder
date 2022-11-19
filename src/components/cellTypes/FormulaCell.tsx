@@ -1,8 +1,10 @@
 import { CellComponentProps } from "cdm/ComponentsModel";
 import { TableColumn } from "cdm/FolderModel";
 import { renderMarkdown } from "components/obsidianArq/MarkdownRenderer";
+import { InputType } from "helpers/Constants";
 import { c, getAlignmentClassname } from "helpers/StylesHelper";
 import React, { useEffect, useRef } from "react";
+import { ParseService } from "services/ParseService";
 
 const FormulaCell = (mdProps: CellComponentProps) => {
   const { defaultCell } = mdProps;
@@ -15,32 +17,57 @@ const FormulaCell = (mdProps: CellComponentProps) => {
   const configInfo = tableState.configState((state) => state.info);
   const columnsInfo = tableState.columns((state) => state.info);
   const formulaInfo = tableState.automations((state) => state.info);
+  const formulaCell = tableState.data(
+    (state) =>
+      ParseService.parseRowToCell(
+        state.rows[row.index],
+        tableColumn,
+        InputType.FORMULA,
+        configInfo.getLocalSettings()
+      ) as string
+  );
 
   useEffect(() => {
     if (formulaRef.current !== null) {
-      formulaRef.current.innerHTML = "";
-      const formulaResponse = formulaInfo
-        .runFormula(
-          tableColumn.config.formula_query,
-          formulaRow,
-          configInfo.getLocalSettings()
-        )
-        .toString();
-      renderMarkdown(defaultCell, formulaResponse, formulaRef.current, 5);
+      const effectCallback = async () => {
+        formulaRef.current.innerHTML = "";
 
-      // Save formula response on disk
-      if (
-        tableColumn.config.persist_formula &&
-        formulaRow[tableColumn.key] !== formulaResponse
-      ) {
-        dataActions.updateCell(
-          row.index,
-          tableColumn,
+        const formulaResponse = formulaInfo
+          .runFormula(
+            tableColumn.config.formula_query,
+            formulaRow,
+            configInfo.getLocalSettings()
+          )
+          .toString();
+
+        await renderMarkdown(
+          defaultCell,
           formulaResponse,
-          columnsInfo.getAllColumns(),
-          configInfo.getLocalSettings()
+          formulaRef.current,
+          5
         );
-      }
+
+        // Save formula response on disk
+        if (
+          tableColumn.config.persist_formula &&
+          formulaCell !== formulaResponse
+        ) {
+          const newCell = ParseService.parseRowToLiteral(
+            formulaRow,
+            tableColumn,
+            formulaResponse
+          );
+
+          await dataActions.updateCell(
+            row.index,
+            tableColumn,
+            newCell,
+            columnsInfo.getAllColumns(),
+            configInfo.getLocalSettings()
+          );
+        }
+      };
+      effectCallback();
     }
   }, [row]);
   return (

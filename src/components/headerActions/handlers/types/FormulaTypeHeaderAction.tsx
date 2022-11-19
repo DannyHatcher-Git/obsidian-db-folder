@@ -32,16 +32,16 @@ function numberTypeComponent(headerActionResponse: HeaderActionResponse) {
     (state) => state.ddbbConfig
   );
 
-  const formulaOnClick = () => {
-    hooks.setShowType(false);
-    hooks.setExpanded(false);
+  const formulaOnClick = async () => {
+    hooks.setTypesEl(null);
+    hooks.setMenuEl(null);
     dataActions.parseDataOfColumn(
       column.columnDef as TableColumn,
       InputType.FORMULA,
       ddbbConfig
     );
 
-    columnActions.alterColumnType(
+    await columnActions.alterColumnType(
       column.columnDef as TableColumn,
       InputType.FORMULA
     );

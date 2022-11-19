@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { MouseEventHandler, useState } from "react";
 import TextIcon from "components/img/Text";
 import MultiIcon from "components/img/Multi";
 import HashIcon from "components/img/Hash";
@@ -14,6 +14,8 @@ import TagsIcon from "components/img/TagsIcon";
 import OutlinkIcon from "components/img/OutlinkIcon";
 import IncomingLinkIcon from "components/img/IncomingLinkIcon";
 import CodeIcon from "components/img/CodeIcon";
+import RelationBidirectionalIcon from "components/img/RelationBidirectionalIcon";
+import RollupIcon from "components/img/RollupIcon";
 import { AddColumnModal } from "components/modals/newColumn/addColumnModal";
 import { InputType, MetadataColumns } from "helpers/Constants";
 import { LOGGER } from "services/Logger";
@@ -29,11 +31,9 @@ import { AddColumnModalProps } from "cdm/ModalsModel";
  */
 export default function DefaultHeader(headerProps: DatabaseHeaderProps) {
   LOGGER.debug(`=>Header ${headerProps.column.columnDef}`);
-  // TODO : add a tooltip to the header
-  const created: boolean = false;
   /** Properties of header */
   const { header, table } = headerProps;
-  const { tableState, view } = table.options.meta;
+  const { tableState } = table.options.meta;
 
   const [columnInfo, columnActions] = tableState.columns((state) => [
     state.info,
@@ -43,10 +43,9 @@ export default function DefaultHeader(headerProps: DatabaseHeaderProps) {
   const configInfo = tableState.configState((state) => state.info);
 
   /** Column values */
-  const { id, input, options, label, config } = header.column
-    .columnDef as TableColumn;
+  const { id, input, label, config } = header.column.columnDef as TableColumn;
   /** reducer asociated to database */
-  const [expanded, setExpanded] = useState(created || false);
+  const [menuEl, setMenuEl] = useState<null | HTMLElement>(null);
   const [referenceElement, setReferenceElement] = useState(null);
   const [labelState, setLabelState] = useState(label);
 
@@ -87,6 +86,12 @@ export default function DefaultHeader(headerProps: DatabaseHeaderProps) {
     case InputType.FORMULA:
       propertyIcon = <CodeIcon />;
       break;
+    case InputType.RELATION:
+      propertyIcon = <RelationBidirectionalIcon />;
+      break;
+    case InputType.ROLLUP:
+      propertyIcon = <RollupIcon />;
+      break;
     default:
       break;
   }
@@ -103,12 +108,16 @@ export default function DefaultHeader(headerProps: DatabaseHeaderProps) {
     new AddColumnModal(table.options.meta.view, addColumnProps).open();
   }
 
+  const openMenuHandler: MouseEventHandler<HTMLDivElement> = (event) => {
+    setMenuEl(menuEl ? null : event.currentTarget);
+  };
+
   LOGGER.debug(`<=Header ${label}`);
   return id !== MetadataColumns.ADD_COLUMN ? (
     <>
       <div
         className={`${c("th-content")}`}
-        onClick={() => setExpanded(true)}
+        onClick={openMenuHandler}
         ref={setReferenceElement}
       >
         <span className="svg-icon svg-gray icon-margin">{propertyIcon}</span>
@@ -132,19 +141,15 @@ export default function DefaultHeader(headerProps: DatabaseHeaderProps) {
           </span>
         )}
       </div>
-      {ReactDOM.createPortal(
-        <HeaderMenu
-          headerProps={headerProps}
-          propertyIcon={propertyIcon}
-          expanded={expanded}
-          setExpanded={setExpanded}
-          created={created}
-          referenceElement={referenceElement}
-          labelState={labelState}
-          setLabelState={setLabelState}
-        />,
-        activeDocument.body
-      )}
+      <HeaderMenu
+        headerProps={headerProps}
+        propertyIcon={propertyIcon}
+        menuEl={menuEl}
+        setMenuEl={setMenuEl}
+        referenceElement={referenceElement}
+        labelState={labelState}
+        setLabelState={setLabelState}
+      />
     </>
   ) : (
     <div

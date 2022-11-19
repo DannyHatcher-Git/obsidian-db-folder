@@ -29,11 +29,11 @@ function hideButton(headerActionResponse: HeaderActionResponse) {
     (store) => store.actions
   );
 
-  const onClick = () => {
+  const onClick = async () => {
     const currentCol = column.columnDef as TableColumn;
     column.getToggleVisibilityHandler()({ target: { checked: false } });
     columnActions.alterIsHidden(currentCol, true);
-    hooks.setExpanded(false);
+    hooks.setMenuEl(null);
   };
 
   return headerButtonComponent({

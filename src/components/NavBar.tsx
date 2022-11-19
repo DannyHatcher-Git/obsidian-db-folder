@@ -59,6 +59,7 @@ export function NavBar(navBarProps: NavBarProps) {
       InputType.MARKDOWN;
     view.plugin.setMarkdownView(view.leaf);
   };
+
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -110,6 +111,8 @@ export function NavBar(navBarProps: NavBarProps) {
         <Toolbar
           style={{
             minHeight: "2.65rem",
+            padding: 0,
+            paddingLeft: "2px",
           }}
         >
           <IconButton
@@ -123,12 +126,12 @@ export function NavBar(navBarProps: NavBarProps) {
               mr: 2,
               maxWidth: 40,
               marginRight: 1,
+              padding: 0.5,
             }}
           >
             <MenuIcon />
           </IconButton>
           <Paper
-            component="form"
             sx={{
               p: "2px 4px",
               display: "flex",
@@ -136,6 +139,7 @@ export function NavBar(navBarProps: NavBarProps) {
               scale: 0.7,
               padding: 0,
               boxShadow: "none",
+              backgroundColor: "transparent",
             }}
           >
             {/** Global filter */}

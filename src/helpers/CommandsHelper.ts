@@ -1,9 +1,9 @@
 import { LocalSettings } from "cdm/SettingsModel";
 import { Notice, TFile, TFolder } from "obsidian";
 import { LOGGER } from "services/Logger";
-import { DatabaseCore, DatabaseFrontmatterOptions, DEFAULT_SETTINGS, YAML_INDENT } from "helpers/Constants";
+import { DatabaseCore, DatabaseFrontmatterOptions, DATABASE_CONFIG, DEFAULT_SETTINGS, YAML_INDENT } from "helpers/Constants";
 
-export async function generateNewDatabase(ddbbConfig: string, folder?: TFolder, ddbbName?: string) {
+export async function generateNewDatabase(ddbbConfig: string, folder?: TFolder, ddbbName?: string, autoOpen = true) {
     const targetFolder = folder
         ?? app.fileManager.getNewFileParent(
             app.workspace.getActiveFile()?.path || ''
@@ -20,12 +20,15 @@ export async function generateNewDatabase(ddbbConfig: string, folder?: TFolder, 
                 .concat('\n')
                 .concat(ddbbConfig)
                 .concat('\n')
-                .concat('%%')
+                .concat(DATABASE_CONFIG.END_CENTINEL)
         );
-        await app.workspace.getMostRecentLeaf().setViewState({
-            type: DatabaseCore.FRONTMATTER_KEY,
-            state: { file: database.path },
-        });
+        // Open the new database file
+        if (autoOpen) {
+            await app.workspace.getMostRecentLeaf().setViewState({
+                type: DatabaseCore.FRONTMATTER_KEY,
+                state: { file: database.path },
+            });
+        }
     } catch (e) {
         LOGGER.error('Error creating database folder:', e);
         new Notice(`Error creating database folder: ${e}`, 5000);

@@ -23,10 +23,12 @@ export type AtomicFilter = {
  */
 export interface GlobalSettings {
     enable_debug_mode: boolean;
+    enable_ribbon_icon: boolean;
     logger_level_info: string;
     media_settings: MediaSettings;
     enable_show_state: boolean;
     csv_file_header_key: string;
+    enable_row_shadow: boolean;
 }
 
 export interface LocalSettings {
